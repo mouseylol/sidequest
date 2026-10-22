@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101116">
+<title>Sidequest — Library</title>
+<style>
+:root{color-scheme:dark;--bg:#101116;--panel:#191b23;--line:#2b2e39;--text:#f2f3f8;--muted:#969baa;--accent:#b6f36b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button{font:inherit;cursor:pointer}.top{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,4vw,56px);border-bottom:1px solid var(--line)}.brand{font-weight:850;font-size:21px;letter-spacing:-.8px}.brand span{color:var(--accent)}.add{border:0;border-radius:10px;background:var(--accent);color:#171a13;font-weight:800;padding:10px 14px}.main{padding:clamp(20px,4vw,48px);max-width:1600px;margin:auto}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px}.game{min-width:0;border:1px solid var(--line);background:var(--panel);border-radius:14px;overflow:hidden;transition:transform .18s,border-color .18s}.game:hover{transform:translateY(-3px);border-color:#68734f}.cover{aspect-ratio:1/1;display:grid;place-items:center;background:linear-gradient(145deg,#303a4b,#1c202b);position:relative}.cover:before{content:"";position:absolute;width:65%;aspect-ratio:1;border:1px solid #ffffff26;border-radius:50%;box-shadow:0 0 0 16px #ffffff07,0 0 0 32px #ffffff05}.symbol{font-size:52px;position:relative;filter:drop-shadow(0 8px 10px #0006)}.info{padding:12px}.title{font-weight:750;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px}.play{width:100%;border:1px solid #3b414b;background:#222630;color:var(--accent);border-radius:8px;padding:8px;font-size:12px;font-weight:800}.empty{grid-column:1/-1;min-height:45vh;display:grid;place-items:center;text-align:center;color:var(--muted);padding:24px}.empty p{margin:0}.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,15px);opacity:0;pointer-events:none;background:#242832;border:1px solid #414654;color:#f1f3f8;border-radius:10px;padding:11px 15px;font-size:12px;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}input{display:none}@media(max-width:500px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.top{height:65px}.cover{aspect-ratio:4/4.5}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">sidequest<span>.</span></div><button class="add" id="add">＋ Add games</button><input id="files" type="file" accept=".nds,.srl,.dsi" multiple></header>
+<main class="main"><section class="grid" id="grid" aria-label="Your games"></section></main>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const games=[];const grid=document.querySelector('#grid'),files=document.querySelector('#files'),toast=document.querySelector('#toast');
+function note(s){toast.textContent=s;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2600)}
+function render(){grid.innerHTML='';if(!games.length){grid.innerHTML='<div class="empty"><p>Your games will appear here.</p></div>';return}games.forEach((g,i)=>{const card=document.createElement('article');card.className='game';card.innerHTML=`<div class="cover" style="background:linear-gradient(145deg,${g.colors[0]},${g.colors[1]})"><span class="symbol">▣</span></div><div class="info"><div class="title" title="${esc(g.title)}">${esc(g.title)}</div><button class="play" data-play="${i}">Play</button></div>`;grid.appendChild(card)})}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.querySelector('#add').onclick=()=>files.click();files.addEventListener('change',()=>{for(const f of files.files){if(!/\.(nds|srl|dsi)$/i.test(f.name)){note('Choose a supported DS game file (.nds, .srl, or .dsi).');continue}if(games.some(g=>g.title===f.name.replace(/\.(nds|srl|dsi)$/i,'')))continue;games.push({title:f.name.replace(/\.(nds|srl|dsi)$/i,''),file:f,colors:[['#3b4f5f','#202c3b'],['#654a5d','#32283b'],['#4b5a43','#202d2b'],['#555078','#29263d']][games.length%4]})}render();files.value=''});
+grid.addEventListener('click',e=>{const b=e.target.closest('[data-play]');if(!b)return;const g=games[Number(b.dataset.play)];note('Game added to your library. The browser emulator still needs to be connected.');});render();
+</script>
+</body></html>
